@@ -1,0 +1,35 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  button#btnStartBuildId start build
+  a(href="/build") start build
+  h2 build content
+  p#msgId= build_content||"Wait..."
+block script
+  script(src="/javascripts/jquery.min.js" type="text/javascript")
+  script.
+    $("#btnStartBuildId").on("click",function(){
+      $("#msgId").html("Building....");
+      $.ajax({
+        type:"POST",
+        url:"/build",
+        data:{
+          projects:[
+            {
+              project_name:"Binary Option",
+              path:"/Users/menglingjun/work/git/binary-option",
+              cmd:"npm run pc_release"
+            }
+          ]
+        },
+        success:function(resp){
+          if(resp.ret!=1){
+            $("#msgId").html(resp.error_msg);
+            return;
+          }
+          $("#msgId").html("Done");
+        }
+      })
+    })
