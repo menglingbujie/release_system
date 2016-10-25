@@ -5,6 +5,7 @@ logpath=$2;
 git pull 1> /dev/null 2>> "$logpath/error.log";
 npm run build_image 1> /dev/null 2>> "$logpath/error.log";
 
+pm2 reload all 1> /dev/null 2>> "$logpath/error.log";
 if [ "x$?" == "x0" ];
 then
   echo 0;

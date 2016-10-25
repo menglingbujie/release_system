@@ -7,7 +7,7 @@ var BuildModel = require("../model/build");
 
 /* GET build page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: '前端编译系统',build_content: "" });
+  res.render('build', { title: '前端编译系统',build_content: "" });
 });
 function doBuild(req,res,build_file){
   var _startTime = (new Date()).getTime();
