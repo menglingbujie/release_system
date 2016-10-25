@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Release System' });
+  res.render('index', { title: '在线编译系统' });
 });
 
 module.exports = router;
