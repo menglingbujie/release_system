@@ -21,7 +21,6 @@ block content
   div.info
     此系统可以在线上进行更新与打包工作, 
     em 资源最好最后打包
-    span (*平均用时60秒)
   p 当前项目为:#{project_name}
   div.btn_group.build
     button.btn#btnStartBuildCodeId(action="code") 开始编译代码
@@ -40,10 +39,17 @@ block script
         default:{return ""}break;
       }
     }
+    function getActionName(action){
+      switch(action){
+        case "code":{return "源代码";}break;
+        case "resource":{return "图片字体资源";}break;
+        default:{return ""}break;
+      }
+    }
     function doBuild(){
       $(".btn_group.build>.btn").attr("disabled",true);
-      $("#msgId").html("编译中....");
       var _action = $(this).attr("action");
+      $("#msgId").html(getActionName(_action)+"编译中....");
       var _url = getUrlByAction(_action);
       $.ajax({
         type:"POST",

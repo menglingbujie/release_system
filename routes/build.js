@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
   res.render('build', { title: '前端编译系统',build_content: "" });
 });
 function doBuild(req,res,build_file){
-  var _startTime = (new Date()).getTime();
+  var _startTime = Math.floor((new Date()).getTime()/1000);
   //检查编译状态文件，如果有人正在编译则提示他
   var _isBdActivity = BuildModel.isBuildActivity();
   if(_isBdActivity){
@@ -20,26 +20,42 @@ function doBuild(req,res,build_file){
   BuildModel.changeBuildStatus(1);
   var _parms = [config.path.project,config.path.error_logs];
   try{
-  var _buildProcess = childProcess.execFile(build_file,_parms,null,function(err,stdout,stderr){
-    //线程关闭后重置编译状态
-    BuildModel.changeBuildStatus(0);
-    if(!stdout&&(err||stderr)){
-      res.status(200).json({ret:0,msg:"",error_msg:stderr.replace(/\r|\n|↵/g,"<br />")});
-      return;
-    }
-    if(stdout&&(stdout==0||stdout=="0")){
-      var _endTime = (new Date()).getTime();
-      var _crossTime = (_endTime-_startTime)/1000;
-      res.status(200).json({ret:1,msg:"编译完成, 用时"+_crossTime+"秒"});
-    }else{
-      if(stderr){
+    var _buildProcess = childProcess.execFile(build_file,_parms,null,function(err,stdout,stderr){
+      //线程关闭后重置编译状态
+      BuildModel.changeBuildStatus(0);
+      if(!stdout&&(err||stderr)){
         res.status(200).json({ret:0,msg:"",error_msg:stderr.replace(/\r|\n|↵/g,"<br />")});
-      }else{
-        res.status(200).json({ret:0,msg:"",error_msg:stdout.replace(/\r|\n|↵/g,"<br />")});
+        return;
       }
-    }
-    res.end();
-  })
+      if(stdout&&(stdout==0||stdout=="0")){
+        var _endTime = Math.floor((new Date()).getTime()/1000);
+        var _crossTime = _endTime-_startTime;
+        res.status(200).json({ret:1,msg:"编译完成, 用时"+_crossTime+"秒"});
+      }else{
+        if(stderr){
+          res.status(200).json({ret:0,msg:"",error_msg:stderr.replace(/\r|\n|↵/g,"<br />")});
+        }else{
+          res.status(200).json({ret:0,msg:"",error_msg:stdout.replace(/\r|\n|↵/g,"<br />")});
+        }
+      }
+      res.end();
+    });
+    _buildProcess.on("close",function(){
+      _buildProcess.kill();
+      console.log("==child process==close===="+_buildProcess.pid)
+    })
+    _buildProcess.on("disconnect",function(){
+      _buildProcess.kill();
+      console.log("==child process==disconnect===="+_buildProcess.pid)
+    })
+    _buildProcess.on("error",function(){
+      _buildProcess.kill();
+      console.log("==child process==error===="+_buildProcess.pid)
+    })
+    _buildProcess.on("exit",function(){
+      _buildProcess.kill();
+      console.log("==child process==exit===="+_buildProcess.pid)
+    })
 }catch(e){
   BuildModel.changeBuildStatus(0);
   res.status(200).json({ret:0,msg:"",error_msg:e.toString()});
